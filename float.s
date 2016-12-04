@@ -22,7 +22,7 @@ __basicoff:
 ; => usage pays off as a size improvement if called atleast 14 times,
 ; else 'bloats' the code by 27 bytes ;=)
 ;
-        .export         popya           ; pop stack into YA (for kernal routines)
+        .export         popya
 
 popya:  ldy     #1
         lda (sp),y    ; get hi byte
@@ -36,9 +36,8 @@ popya:  ldy     #1
 ;
 ; routines for inc/dec'ing sp
 ;
-        .export         incsp2x
-
 ; do this by hand, cause it gets used a lot
+        .export         incsp2x
 
 incsp2x: ldx     sp              ; 3
          inx                     ; 2
@@ -68,87 +67,6 @@ incsp2x: ldx     sp              ; 3
   .importzp ptr1
 
   .include  "float.inc"
-
-;---------------------------------------------------------------------------------------------
-; first come the actual stubs to floating point routines, these are ment to be
-; used from further written ml-math routines aswell. (maybe also from the compiler?!)
-;---------------------------------------------------------------------------------------------
-
-;---------------------------------------------------------------------------------------------
-; converter integer types to float
-;---------------------------------------------------------------------------------------------
-
-___float_s8_to_fac:
-        jsr popa
-        ;a: low
-        jsr __basicon
-        jsr BASIC_s8_to_FAC
-        jmp __basicoff
-;       rts
-
-___float_u8_to_fac:
-        jsr popa
-        ;a: low
-        jsr __basicon
-        jsr BASIC_u8_to_FAC
-        jmp __basicoff
-;       rts
-
-___float_s16_to_fac:
-        jsr popya
-        ;a: low x: high
-;       tay
-;       txa
-
-        ;y: low a: high
-        jsr __basicon
-        jsr BASIC_s16_to_FAC
-        jmp __basicoff
-;       rts
-
-___float_u16_to_fac:
-        jsr popax
-        ;a: low x: high
-        stx $62
-        sta $63
-        jsr __basicon
-        ldx #$90
-        sec
-        jsr BASIC_u16_to_FAC
-        jmp __basicoff
-;       rts
-
-__float_fac_to_u16:
-        jsr __basicon
-        jsr BASIC_FAC_to_u16
-        jsr __basicoff
-        ldx $64
-        lda $65
-        rts
-
-;---------------------------------------------------------------------------------------------
-; converter float to string and back
-;---------------------------------------------------------------------------------------------
-
-__float_fac_to_str:
-        jsr __basicon
-        jsr BASIC_FAC_to_string
-        jmp __basicoff
-;       rts
-
-___float_str_to_fac:
-        jsr popax
-        sta $22
-        stx $23
-        ldy #$00
-@l:     lda ($22),y
-        beq @s
-        iny
-        bne @l
-@s:     tya
-        jsr __basicon
-        jsr BASIC_string_to_FAC
-        jmp __basicoff
 
 ;---------------------------------------------------------------------------------------------
 ; load float from memory to fac and/or arg and back for further processing
@@ -430,11 +348,7 @@ __ftostr:
         ;jsr popax ; ptr to float
         jsr ___float_float_to_fac    ; also pops pointer to float
         jsr __float_fac_to_str
-
-___float_strbuf_to_string:
         jsr popax ; ptr to string
-
-__float_strbuf_to_string:
         sta ptr1
         stx ptr1+1
         ldy #$00
@@ -447,10 +361,30 @@ __float_strbuf_to_string:
 @s:
         rts
 
+__float_fac_to_str:
+        jsr __basicon
+        jsr BASIC_FAC_to_string
+        jmp __basicoff
+;       rts
+
 __strtof:
         jsr ___float_str_to_fac
         jmp ___float_fac_to_float    ; also pops pointer to float
 ;        rts
+
+___float_str_to_fac:
+        jsr popax
+        sta $22
+        stx $23
+        ldy #$00
+@l:     lda ($22),y
+        beq @s
+        iny
+        bne @l
+@s:     tya
+        jsr __basicon
+        jsr BASIC_string_to_FAC
+        jmp __basicoff
 
 
 ; convert char to float
@@ -462,6 +396,14 @@ __strtof:
         jmp ___float_fac_to_float
         ;rts
 
+___float_s8_to_fac:
+        jsr popa
+        ;a: low
+        jsr __basicon
+        jsr BASIC_s8_to_FAC
+        jmp __basicoff
+;       rts
+
 
 ; convert unsigned char to float
 ; void _utof(FLOATFAC *f,unsigned char v);
@@ -471,6 +413,14 @@ __strtof:
         ;jsr popax ; ptr to float
         jmp ___float_fac_to_float
         ;rts
+
+___float_u8_to_fac:
+        jsr popa
+        ;a: low
+        jsr __basicon
+        jsr BASIC_u8_to_FAC
+        jmp __basicoff
+;       rts
 
 
 ; convert short to float
@@ -486,6 +436,18 @@ __strtof:
         jmp ___float_fac_to_float
         ;rts
 
+___float_u16_to_fac:
+        jsr popax
+        ;a: low x: high
+        stx $62
+        sta $63
+        jsr __basicon
+        ldx #$90
+        sec
+        jsr BASIC_u16_to_FAC
+        jmp __basicoff
+;       rts
+
 
 ; convert integer to float
 ; void _itof(FLOATFAC *f,int v);
@@ -498,6 +460,18 @@ __strtof:
         ;jsr popax ; ptr to float
         jmp ___float_fac_to_float
         ;rts
+
+___float_s16_to_fac:
+        jsr popya
+        ;a: low x: high
+;       tay
+;       txa
+
+        ;y: low a: high
+        jsr __basicon
+        jsr BASIC_s16_to_FAC
+        jmp __basicoff
+;       rts
 
 
 ; convert float to integer
@@ -539,6 +513,13 @@ __strtof:
 ;        jmp pushax ; ptr to integer
         rts
 
+__float_fac_to_u16:
+        jsr __basicon
+        jsr BASIC_FAC_to_u16
+        jsr __basicoff
+        ldx $64
+        lda $65
+        rts
 
 ;---------------------------------------------------------------------------------------------
 ; these functions take one arg (in FAC) and return result (in FAC) aswell
@@ -647,7 +628,6 @@ __fcmp:
         lda #<tempfloat
         ldy #>tempfloat
 
-___float_cmp_fac_arg:
         jsr __basicon
         jsr BASIC_FAC_cmp
         jmp __float_ret3
@@ -655,7 +635,6 @@ ___float_cmp_fac_arg:
 
 __ftestsgn:
         jsr ___float_float_to_fac
-;___float_testsgn_fac:
         jsr __basicon
         jsr BASIC_FAC_testsgn
         jmp __float_ret3
@@ -726,30 +705,30 @@ __float_add_fac_arg:
 
 
 __float_swap_fac_arg:
-        lda   $61
-        ldx   $69
-        stx   $61
-        sta   $69
-        lda   $62
-        ldx   $6a
-        stx   $62
-        sta   $6a
-        lda   $63
-        ldx   $6b
-        stx   $63
-        sta   $6b
-        lda   $64
-        ldx   $6c
-        stx   $64
-        sta   $6c
-        lda   $65
-        ldx   $6d
-        stx   $65
-        sta   $6d
-        lda   $66
-        ldx   $6e
-        stx   $66
-        sta   $6e
+        lda $61
+        ldx $69
+        stx $61
+        sta $69
+        lda $62
+        ldx $6a
+        stx $62
+        sta $6a
+        lda $63
+        ldx $6b
+        stx $63
+        sta $6b
+        lda $64
+        ldx $6c
+        stx $64
+        sta $6c
+        lda $65
+        ldx $6d
+        stx $65
+        sta $6d
+        lda $66
+        ldx $6e
+        stx $66
+        sta $6e
         rts
 
 
