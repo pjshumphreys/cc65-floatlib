@@ -81,8 +81,6 @@ incsp2x: ldx     sp              ; 3
 ___float_s8_to_fac:
         jsr popa
         ;a: low
-
-__float_s8_to_fac:
         jsr __basicon
         jsr BASIC_s8_to_FAC
         jmp __basicoff
@@ -91,8 +89,6 @@ __float_s8_to_fac:
 ___float_u8_to_fac:
         jsr popa
         ;a: low
-
-__float_u8_to_fac:
         jsr __basicon
         jsr BASIC_u8_to_FAC
         jmp __basicoff
@@ -104,7 +100,6 @@ ___float_s16_to_fac:
 ;       tay
 ;       txa
 
-__float_s16_to_fac:
         ;y: low a: high
         jsr __basicon
         jsr BASIC_s16_to_FAC
@@ -114,8 +109,6 @@ __float_s16_to_fac:
 ___float_u16_to_fac:
         jsr popax
         ;a: low x: high
-
-__float_u16_to_fac:
         stx $62
         sta $63
         jsr __basicon
@@ -145,8 +138,6 @@ __float_fac_to_str:
 
 ___float_str_to_fac:
         jsr popax
-
-__float_str_to_fac:
         sta $22
         stx $23
         ldy #$00
@@ -173,10 +164,13 @@ ___float_float_to_fac:
         jsr ldeaxysp
         sta $63 ; mantissa
         stx $62 ; mantissa
+
         ldy sreg
         sty $61 ; exp
+
         ldy sreg+1
         sty $66 ; sign
+
         ldx #$00
         stx $64 ; mantissa
         stx $65 ; mantissa
@@ -199,25 +193,32 @@ __float_float_to_fac:
         sta ptr1
         stx ptr1+1
         ldy #$00
+
         lda (ptr1),y
         sta $61
         iny
+
         lda (ptr1),y
         sta $62
         iny
+
         lda (ptr1),y
         sta $63
         iny
+
         lda (ptr1),y
         sta $64
         iny
+
         lda (ptr1),y
         sta $65
         iny
+
         lda (ptr1),y
         sta $66
         ldx #$00
         stx $70
+
         rts
 
 
@@ -336,30 +337,38 @@ __float_fac_to_float:
         sta ptr1
         stx ptr1+1
         ldy #$00
+
         lda $61
         sta (ptr1),y
         iny
+
         lda $62
         sta (ptr1),y
         iny
+
         lda $63
         sta (ptr1),y
         iny
+
         lda $64
         sta (ptr1),y
         iny
+
         lda $65
         sta (ptr1),y
         iny
+
         lda $66
         sta (ptr1),y
+
         rts
+
 
 __float_fac_to_float_packed:
         sta ptr1
         stx ptr1+1
-
         ldy #4
+
         lda $65
         sta (ptr1),y
         dey
@@ -383,11 +392,12 @@ __float_fac_to_float_packed:
 
         rts
 
+
 __float_arg_to_float_packed:
         sta ptr1
         stx ptr1+1
-
         ldy #4
+
         lda $65+8
         sta (ptr1),y
         dey
@@ -642,6 +652,7 @@ ___float_cmp_fac_arg:
         jsr BASIC_FAC_cmp
         jmp __float_ret3
 
+
 __ftestsgn:
         jsr ___float_float_to_fac
 ;___float_testsgn_fac:
@@ -740,6 +751,7 @@ __float_swap_fac_arg:
         stx   $66
         sta   $6e
         rts
+
 
 __fneg:
         jsr ___float_float_to_fac    ; also pops pointer to float
