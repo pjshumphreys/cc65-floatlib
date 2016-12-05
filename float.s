@@ -406,9 +406,9 @@ __strtof:
         ;a: low x: high
         stx $62
         sta $63
-        jsr __basicon
         ldx #$90
         sec
+        jsr __basicon
         jsr BASIC_u16_to_FAC
         jsr __basicoff
 
@@ -477,10 +477,11 @@ __fround:  __ffunc1 BASIC_FAC_Round
 
 .macro __ffunc2a addr
         jsr ___float_float_to_fac_arg
-        jsr __basicon
         lda $61
+        jsr __basicon
         jsr addr
-        jmp __float_ret2
+        jsr __basicoff
+        jmp ___float_fac_to_float
 .endmacro
 
 __fadd:   __ffunc2a BASIC_ARG_FAC_Add
@@ -494,20 +495,12 @@ __fpow:   __ffunc2a BASIC_ARG_FAC_Pow
         jsr ___float_float_to_fac_arg
         jsr __basicon
         jsr addr
-        jmp __float_ret2
+        jsr __basicoff
+        jmp ___float_fac_to_float
 .endmacro
 
 __fand:   __ffunc2b BASIC_ARG_FAC_And
 __for:    __ffunc2b BASIC_ARG_FAC_Or
-
-__float_ret2:
-        ;jsr __basicoff
-        ldx #$36
-        stx $01
-        cli
-        
-        jmp ___float_fac_to_float    ; also pops pointer to float
-
 
 __fcmp:
         jsr ___float_float_to_fac_arg
@@ -520,26 +513,17 @@ __fcmp:
 
         jsr __basicon
         jsr BASIC_FAC_cmp
-        jmp __float_ret3
-
+        jsr __basicoff
+        ldx #0
+        rts
 
 __ftestsgn:
         jsr ___float_float_to_fac
         jsr __basicon
         jsr BASIC_FAC_testsgn
-        jmp __float_ret3
-
-
-__float_ret3:
-        ;jsr __basicoff
-        ldx #$36
-        stx $01
-        cli
-
-        ; a=0 (==) / a=1 (>) / a=255 (<)
+        jsr __basicoff
         ldx #0
         rts
-
 
 ;---------------------------------------------------------------------------------------------
 ; polynom1 f(x)=a1+a2*x^2+a3*x^3+...+an*x^n
@@ -549,8 +533,8 @@ __fpoly1:
         jsr popya
         jsr __basicon
         jsr BASIC_FAC_Poly1
-        jmp __float_ret2
-
+        jsr __basicoff
+        jmp ___float_fac_to_float
 
 ;---------------------------------------------------------------------------------------------
 ; polynom2 f(x)=a1+a2*x^3+a3*x^5+...+an*x^(2n-1)
@@ -560,8 +544,8 @@ __fpoly2:
         jsr popya
         jsr __basicon
         jsr BASIC_FAC_Poly1
-        jmp __float_ret2
-
+        jsr __basicoff
+        jmp ___float_fac_to_float
 
 __float_atn_fac:
         jsr __basicon
@@ -570,15 +554,15 @@ __float_atn_fac:
 
 
 __float_div_fac_arg:
-        jsr __basicon
         lda $61
+        jsr __basicon
         jsr BASIC_ARG_FAC_Div
         jmp __basicoff
 
 
 __float_add_fac_arg:
-        jsr __basicon
         lda $61
+        jsr __basicon
         jsr BASIC_ARG_FAC_Add
         jmp __basicoff
 
@@ -684,7 +668,14 @@ __fatan2:
                         lda #<__f_1pi2
                         ldx #>__f_1pi2
                         jsr __float_float_to_fac
-                        jmp __float_ret2
+
+__float_ret2:
+        ;jsr __basicoff
+        ldx #$36
+        stx $01
+        cli
+        
+        jmp ___float_fac_to_float    ; also pops pointer to float
 
 
         .export __f_0,__f_256
