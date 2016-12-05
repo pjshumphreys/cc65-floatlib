@@ -626,7 +626,7 @@ __fatan2:
                 jsr __float_swap_fac_arg
                 jsr __float_div_fac_arg
                 jsr __float_atn_fac
-                jmp __float_ret2
+                jmp ___float_fac_to_float
 @s12: ; arg<0
                 ; a=atn(y/x)+pi
                 jsr __float_swap_fac_arg
@@ -636,7 +636,7 @@ __fatan2:
                 ldx #>__f_pi
                 jsr __float_float_to_arg
                 jsr __float_add_fac_arg
-                jmp __float_ret2
+                jmp ___float_fac_to_float
 
 @s11: ; arg=0
                 ;jsr ___float_testsgn_fac
@@ -655,27 +655,20 @@ __fatan2:
                         lda #<__f_pi2
                         ldx #>__f_pi2
                         jsr __float_float_to_fac
-                        jmp __float_ret2
+                        jmp ___float_fac_to_float
       ; fac =0
 @s21:
                         ; a= 0
                         lda #$00
                         sta $62
-                        jmp __float_ret2
+                        jmp ___float_fac_to_float
       ; fac <0
 @s22:
                         ; a= 1.5*pi
                         lda #<__f_1pi2
                         ldx #>__f_1pi2
                         jsr __float_float_to_fac
-
-__float_ret2:
-        ;jsr __basicoff
-        ldx #$36
-        stx $01
-        cli
-        
-        jmp ___float_fac_to_float    ; also pops pointer to float
+                        jmp ___float_fac_to_float
 
 
         .export __f_0,__f_256
