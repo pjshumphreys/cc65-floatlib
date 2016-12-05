@@ -408,7 +408,6 @@ __itof:
 ; void _itof(FLOATFAC *f);
 __ftoi:
         jsr ___float_float_to_fac    ; also pops pointer to float
-        ;jsr __float_fac_to_u16
         jsr __basicon
         jsr BASIC_FAC_to_u16
         jsr __basicoff
@@ -607,7 +606,6 @@ __fatan2:
                 jmp ___float_fac_to_float
 
 @s11: ; arg=0
-                ;jsr ___float_testsgn_fac
                 lda $61
                 beq @s21   ; =0
                 lda $66
