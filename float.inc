@@ -44,8 +44,6 @@ BASIC_FAC_Poly1 	= $e059     ; in: FAC x  a/y ptr to poly (1byte grade,5bytes pe
 ;BASIC_ARG_FAC_Add     	= $b86a     ; in: ARG,FAC out:FAC
 
 
-
-
 ;these are unused
 ;BASIC_FAC_Poly2 	= $e043     ; in: FAC x  a/y ptr to poly (1byte grade,5bytes per coefficient)
 
