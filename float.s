@@ -74,7 +74,7 @@ incsp2x:
 
 ;---------------------------------------------------------------------------------------------
 ; load float from memory to fac and/or arg and back for further processing
-; we cant use the routines from basic for this task since source adress
+; we cant use the routines from basic for this task since source address
 ; may be located in the same bank as basic rom.
 ;---------------------------------------------------------------------------------------------
 
@@ -109,7 +109,6 @@ ___float_float_to_fac:
 
         jmp incsp4
 
-
 __float_float_to_fac:
         sta ptr1
         stx ptr1+1
@@ -141,7 +140,6 @@ __float_float_to_fac:
         stx $70
 
         rts
-
 
 ; get two floats, to FAC and ARG
 
@@ -177,7 +175,6 @@ ___float_float_to_arg:
 
         jmp incsp4
 
-
 __float_float_to_arg:
         sta ptr1
         stx ptr1+1
@@ -211,7 +208,6 @@ __float_float_to_arg:
 
         rts
 
-
 ;
 ; return 32bit float value
 ;
@@ -236,7 +232,6 @@ ___float_fac_to_float:
         ldx $62 ; mantissa
         lda $63; mantissa
         rts
-
 
 __float_fac_to_float:
         sta ptr1
@@ -268,7 +263,6 @@ __float_fac_to_float:
 
         rts
 
-
 __float_fac_to_float_packed:
         sta ptr1
         stx ptr1+1
@@ -296,7 +290,6 @@ __float_fac_to_float_packed:
         sta (ptr1),y
 
         rts
-
 
 __float_arg_to_float_packed:
         sta ptr1
@@ -330,15 +323,11 @@ __float_arg_to_float_packed:
 
 ; convert float to string
 ; void _ftos(char *d,FLOATFAC *s)
-
 __ftostr:
         jsr ___float_float_to_fac    ; also pops pointer to float
-
-        ;jsr __float_fac_to_str
         jsr __basicon
         jsr BASIC_FAC_to_string
         jsr __basicoff
-        
         jsr popax ; ptr to string
         sta ptr1
         stx ptr1+1
@@ -352,9 +341,7 @@ __ftostr:
 @s:
         rts
 
-
 __strtof:
-        ;jsr ___float_str_to_fac
         jsr popax
         sta $22
         stx $23
@@ -369,39 +356,31 @@ __strtof:
         jsr __basicon
         jsr BASIC_string_to_FAC
         jsr __basicoff
-
         jmp ___float_fac_to_float    ; also pops pointer to float
-
 
 ; convert char to float
 ; void _ctof(FLOATFAC *f,char v);
- __ctof:
-        ;jsr ___float_s8_to_fac
+__ctof:
         jsr popa
         ;a: low
         jsr __basicon
         jsr BASIC_s8_to_FAC
         jsr __basicoff
-
         jmp ___float_fac_to_float
-
 
 ; convert unsigned char to float
 ; void _utof(FLOATFAC *f,unsigned char v);
- __utof:
-        ;jsr ___float_u8_to_fac
+__utof:
         jsr popa
         ;a: low
         jsr __basicon
         jsr BASIC_u8_to_FAC
         jsr __basicoff
-
         jmp ___float_fac_to_float
 
 ; convert short to float
 ; void _stof(FLOATFAC *f,unsigned short v);
- __stof:
-        ;jsr ___float_u16_to_fac
+__stof:
         jsr popax
         ;a: low x: high
         stx $62
@@ -411,29 +390,23 @@ __strtof:
         jsr __basicon
         jsr BASIC_u16_to_FAC
         jsr __basicoff
-
         jmp ___float_fac_to_float
-
 
 ; convert integer to float
 ; void _itof(FLOATFAC *f,int v);
- __itof:
+__itof:
         ;y: low a: high
-
-        ;jsr ___float_s16_to_fac
         jsr popya
         ;a: low x: high
         ;y: low a: high
         jsr __basicon
         jsr BASIC_s16_to_FAC
         jsr __basicoff
-        
         jmp ___float_fac_to_float
-
 
 ; convert float to integer
 ; void _itof(FLOATFAC *f);
- __ftoi:
+__ftoi:
         jsr ___float_float_to_fac    ; also pops pointer to float
         ;jsr __float_fac_to_u16
         jsr __basicon
@@ -444,7 +417,7 @@ __strtof:
         rts
 
 ;---------------------------------------------------------------------------------------------
-; these functions take one arg (in FAC) and return result (in FAC) aswell
+; macros needed as function templates
 ;---------------------------------------------------------------------------------------------
 
 .macro __ffunc1 addr
@@ -454,6 +427,27 @@ __strtof:
         jsr __basicoff
         jmp ___float_fac_to_float    ; also pops pointer to float
 .endmacro
+
+.macro __ffunc2a addr
+        jsr ___float_float_to_fac_arg
+        lda $61
+        jsr __basicon
+        jsr addr
+        jsr __basicoff
+        jmp ___float_fac_to_float
+.endmacro
+
+.macro __ffunc2b addr
+        jsr ___float_float_to_fac_arg
+        jsr __basicon
+        jsr addr
+        jsr __basicoff
+        jmp ___float_fac_to_float
+.endmacro
+
+;---------------------------------------------------------------------------------------------
+; these functions take one arg (in FAC) and return result (in FAC) aswell
+;---------------------------------------------------------------------------------------------
 
 __fabs:    __ffunc1 BASIC_FAC_Abs
 __fatn:    __ffunc1 BASIC_FAC_Atn
@@ -475,29 +469,11 @@ __fround:  __ffunc1 BASIC_FAC_Round
 ; these functions take two args (in FAC and ARG) and return result (in FAC)
 ;---------------------------------------------------------------------------------------------
 
-.macro __ffunc2a addr
-        jsr ___float_float_to_fac_arg
-        lda $61
-        jsr __basicon
-        jsr addr
-        jsr __basicoff
-        jmp ___float_fac_to_float
-.endmacro
-
 __fadd:   __ffunc2a BASIC_ARG_FAC_Add
 __fsub:   __ffunc2a BASIC_ARG_FAC_Sub
 __fmul:   __ffunc2a BASIC_ARG_FAC_Mul
 __fdiv:   __ffunc2a BASIC_ARG_FAC_Div
 __fpow:   __ffunc2a BASIC_ARG_FAC_Pow
-
-
-.macro __ffunc2b addr
-        jsr ___float_float_to_fac_arg
-        jsr __basicon
-        jsr addr
-        jsr __basicoff
-        jmp ___float_fac_to_float
-.endmacro
 
 __fand:   __ffunc2b BASIC_ARG_FAC_And
 __for:    __ffunc2b BASIC_ARG_FAC_Or
@@ -552,20 +528,17 @@ __float_atn_fac:
         jsr BASIC_FAC_Atn
         jmp __basicoff
 
-
 __float_div_fac_arg:
         lda $61
         jsr __basicon
         jsr BASIC_ARG_FAC_Div
         jmp __basicoff
 
-
 __float_add_fac_arg:
         lda $61
         jsr __basicon
         jsr BASIC_ARG_FAC_Add
         jmp __basicoff
-
 
 __float_swap_fac_arg:
         lda $61
@@ -594,7 +567,6 @@ __float_swap_fac_arg:
         sta $6e
         rts
 
-
 __fneg:
         jsr ___float_float_to_fac    ; also pops pointer to float
         lda $61       ; FAC Exponent
@@ -605,12 +577,9 @@ __fneg:
 @sk:
         jmp ___float_fac_to_float    ; also pops pointer to float
 
-
 ; void _fatan2(float *a,float *x,float *y)
 __fatan2:
         jsr ___float_float_to_fac_arg
-
-        ;jsr ___float_testsgn_arg
         lda $69
         beq @s11  ; =0
         lda $6e
@@ -618,7 +587,6 @@ __fatan2:
         lda #$ff
         bcs @s
         lda #$01
-
 @s:
         bpl @s12   ; <0
       ; arg>0
@@ -648,7 +616,7 @@ __fatan2:
                 bcs @s23
                 lda #$01
 
-@s23:                
+@s23:
                 bpl @s22   ; <0
       ; fac >0
                         ; a= 0.5*pi
