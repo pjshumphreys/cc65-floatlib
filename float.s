@@ -1,61 +1,79 @@
 FUNC0:
   sta aRegBackup
-  lda #>(farret0-1)
+  lda #>(__basicoff-1)
   pha
-  lda #<(farret1-1)
-  jmp FUNC4
-
-FUNC3:
-  jsr ___float_float_to_fac_arg
-  jmp FUNC3A
-
-FUNC2:
-  jsr ___float_float_to_fac_arg
-  lda $61
-  jmp FUNC3A
-
-FUNC1:
-  jsr ___float_float_to_fac    ; also pops pointer to float
-
-FUNC3A:
-  sta aRegBackup
-  lda #>(farret1-1)
-  pha
-  lda #<(farret1-1)
-
-FUNC4:
+  lda #<(__basicoff-1)
   pha
   lda highAddressTable, x
   pha
   lda lowAddressTable, x
   pha
-
-  ;__basicon
-  sei
-  ldx #$37
-  stx $01
-
   lda aRegBackup
   ldx xRegBackup
-  rts ; non local jmp to the real function
+  jmp __basicon
 
-farret0:
-  ;__basicoff
-  ldx #$36
-  stx $01
-  cli
+FUNC1:
+  sta aRegBackup
+  lda #>(__basicoff2-1)
+  pha
+  lda #<(__basicoff2-1)
+  pha
+  lda highAddressTable, x
+  pha
+  lda lowAddressTable, x
+  pha
+  lda aRegBackup
+  lda xRegBackup
+  jsr ___float_float_to_fac    ; also pops pointer to float
+  jmp __basicon
 
-  rts
-  
-farret1:
-  ;__basicoff
-  ldx #$36
-  stx $01
-  cli
+FUNC2:
+  sta aRegBackup
+  lda #>(__basicoff2-1)
+  pha
+  lda #<(__basicoff2-1)
+  pha
+  lda highAddressTable, x
+  pha
+  lda lowAddressTable, x
+  pha
+  lda aRegBackup
+  lda xRegBackup
+  jsr ___float_float_to_fac_arg
+  lda $61
+  jmp __basicon
 
-  jmp ___float_fac_to_float
+FUNC3:
+  sta aRegBackup
+  lda #>(__basicoff2-1)
+  pha
+  lda #<(__basicoff2-1)
+  pha
+  lda highAddressTable, x
+  pha
+  lda lowAddressTable, x
+  pha
+  lda aRegBackup
+  ldx xRegBackup
+  jsr ___float_float_to_fac_arg
 
 ;---------------------------------------------------------------------------------------------
+
+__basicon:
+        sei
+        ldx #$37
+        stx $01
+        rts ; non local jmp to the real function
+__basicoff:
+        ldx #$36
+        stx $01
+        cli
+        rts
+__basicoff2:
+        ldx #$36
+        stx $01
+        cli
+        jmp ___float_fac_to_float
 
         .importzp sp
 
